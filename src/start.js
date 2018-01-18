@@ -53,10 +53,35 @@ export const start = async () => {
       }
     `];
 
-    const resolvers = {
-      Query: {
-        post: async (root, {_id}) => {
-          return prepare(await Posts.findOne(ObjectId(_id)))
+  
+   const resolvers ={
+     Mutation :{
+
+  //   githubAuthentication : async (parent, args, context) => {
+  //     const {githubCode}= args
+  //     const body={accesstoken: accesstoken, topic_id: topic_id}
+  //     const ress=await fetch(api, { 
+  //       method: 'POST',
+  //       body:    JSON.stringify(body),
+  //       headers: { 'Content-Type': 'application/json' },
+  //     })
+  //     .then(res => res.json())
+  //     .then(json =>json);
+  //      console.log(ress);
+  //      const success={"success":ress.success}
+  //      return success;  
+  //     }
+  //    }
+
+  //  }
+   async function getGithubToken(githubCode) {
+    const endpoint = 'https://github.com/login/oauth/access_token'
+  
+    const data = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
         },
         posts: async () => {
           return (await Posts.find({}).toArray()).map(prepare)
