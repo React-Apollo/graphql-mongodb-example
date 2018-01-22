@@ -151,7 +151,7 @@ export const start = async () => {
       console.log(`Visit ${URL}:${PORT}${homePath}`)
     })
      //console.log(hotelData)
-     //InsertData(hotelData)
+     InsertData(hotelData)
   } catch (e) {
     console.log(e)
   }
