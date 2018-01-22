@@ -1,127 +1,88 @@
-import {MongoClient, ObjectId} from 'mongodb'
 import express from 'express'
 import bodyParser from 'body-parser'
 import {graphqlExpress, graphiqlExpress} from 'graphql-server-express'
 import {makeExecutableSchema} from 'graphql-tools'
 import cors from 'cors'
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
+import fetch from 'node-fetch';
 
 const URL = 'http://localhost'
 const PORT = 3001
-const MONGO_URL = 'mongodb://localhost:27017/blog'
-
-const prepare = (o) => {
-  o._id = o._id.toString()
-  return o
-}
-
 export const start = async () => {
   try {
-    const db = await MongoClient.connect(MONGO_URL)
-
-    const Posts = db.collection('posts')
-    const Comments = db.collection('comments')
 
     const typeDefs = [`
-      type Query {
-        post(_id: String): Post
-        posts: [Post]
-        comment(_id: String): Comment
-      }
-
-      type Post {
-        _id: String
-        title: String
-        content: String
-        comments: [Comment]
-      }
-
-      type Comment {
-        _id: String
-        postId: String
-        content: String
-        post: Post
-      }
-
-      type Mutation {
-        createPost(title: String, content: String): Post
-        createComment(postId: String, content: String): Comment
-      }
-
-      schema {
-        query: Query
-        mutation: Mutation
-      }
+    type AuthenticateUserPayload {
+      id: ID!
+      token: String!
+    }
+    
+    type Query {
+      getGithubToken(githubCode: String!): AuthenticateUserPayload
+    }
+    schema {
+      query: Query
+    }
     `];
 
   
    const resolvers ={
-     Mutation :{
-
-  //   githubAuthentication : async (parent, args, context) => {
-  //     const {githubCode}= args
-  //     const body={accesstoken: accesstoken, topic_id: topic_id}
-  //     const ress=await fetch(api, { 
-  //       method: 'POST',
-  //       body:    JSON.stringify(body),
-  //       headers: { 'Content-Type': 'application/json' },
-  //     })
-  //     .then(res => res.json())
-  //     .then(json =>json);
-  //      console.log(ress);
-  //      const success={"success":ress.success}
-  //      return success;  
-  //     }
-  //    }
-
-  //  }
-   async function getGithubToken(githubCode) {
-    const endpoint = 'https://github.com/login/oauth/access_token'
-  
-    const data = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+     Query :{
+    /*test start area*/  
+     getGithubToken:async (parent,args,context)=>{
+       console.log(args);
+      const endpoint = 'https://github.com/login/oauth/access_token'
+      const {githubCode} =args;
+      const client_id= '842e83a0329b156b0a5b'
+      const client_secret = '0a25a9f3c5cb3d47eece0b54e58163a188834bf9'
+      const data = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        posts: async () => {
-          return (await Posts.find({}).toArray()).map(prepare)
-        },
-        comment: async (root, {_id}) => {
-          return prepare(await Comments.findOne(ObjectId(_id)))
-        },
-      },
-      Post: {
-        comments: async ({_id}) => {
-          return (await Comments.find({postId: _id}).toArray()).map(prepare)
-        }
-      },
-      Comment: {
-        post: async ({postId}) => {
-          return prepare(await Posts.findOne(ObjectId(postId)))
-        }
-      },
-      Mutation: {
-        createPost: async (root, args, context, info) => {
-          const res = await Posts.insert(args)
-          return prepare(await Posts.findOne({_id: res.insertedIds[1]}))
-        },
-        createComment: async (root, args) => {
-          const res = await Comments.insert(args)
-          return prepare(await Comments.findOne({_id: res.insertedIds[1]}))
-        },
-      },
+        body: JSON.stringify({
+          client_id,
+          client_secret,
+          code: githubCode,
+        })
+      })
+        .then(response => response.json())
+    
+      if (data.error) {
+        throw new Error(JSON.stringify(data.error))
+      }
+      console.log("data,",data);
+      const  res=await getGithubUser(data.access_token)
+      console.log(res);
+      return {token:data.access_token,id:res.id};
     }
+    /*test end area*/   
+     }
 
-    const schema = makeExecutableSchema({
+   }
+
+   const getGithubUser=async (githubToken)=>{
+    const endpoint = `https://api.github.com/user?access_token=${githubToken}` 
+    const data = await fetch(endpoint).then(response => response.json())
+    if (data.error) {
+      throw new Error(JSON.stringify(data.error))
+    }
+  
+    return data
+  }
+   
+   const schema = makeExecutableSchema({
       typeDefs,
       resolvers
     })
 
     const app = express()
 
-    app.use(cors())
+    //app.use(cors())
 
-    app.use('/graphql', bodyParser.json(), graphqlExpress({schema}))
+    app.use('/graphql', bodyParser.json(), graphqlExpress({schema: schema}))
 
     const homePath = '/graphiql'
 
