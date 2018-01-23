@@ -12,9 +12,11 @@ require('isomorphic-fetch')
 import fetch from 'node-fetch'
 import { request } from 'graphql-request'
 import hotelData from '../dist/hotelData'//导入的数据
+import new_hotel from '../dist/new_hotel'
+
 const URL = 'http://localhost'
 const PORT = 3001
-const api = 'https://api.graph.cool/simple/v1/cjaxudkum2ugf0127kok921bc'; //graphcool API
+const api = 'https://api.graph.cool/simple/v1/rest-endpoint'; //graphcool API
 //graphql模板
 const mu = `mutation createOneHotel(
   $name:String!,
@@ -61,9 +63,11 @@ export const start = async () => {
    //      //InsertData(Data);
    //      console.log(typeof(hotelData));
    //  });
-      
-   InsertData(hotelData);
-  
+   const startTime=Date.now();   
+   //const  data =await InsertData(new_hotel);
+   const endTime=Date.now();
+   const spend=endTime-startTime;
+   console.log("spending time:",spend);
   } catch (e) {
     console.log(e)
   };

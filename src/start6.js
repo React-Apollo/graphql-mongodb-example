@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 import {graphqlExpress, graphiqlExpress} from 'graphql-server-express'
 import {makeExecutableSchema} from 'graphql-tools'
 import cors from 'cors'
-var fs= require('fs');
+var fs = require('fs');
 var path=require('path')
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
