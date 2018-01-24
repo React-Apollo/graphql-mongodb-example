@@ -34,6 +34,7 @@
     "nimble": "^0.0.2",
     "node-fetch": "^1.7.3",
     "ramda": "^0.25.0",
+    "rx": "^4.1.0",
     "superagent": "^3.8.2",
     "transducers-js": "^0.4.174"
   }
