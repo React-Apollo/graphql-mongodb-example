@@ -10,8 +10,6 @@
 // Functions fn1, fn2, fn3 can be standard synchronous functions or return a Promise
 compose(fn3, fn2, fn1)(input).then(result => console.log(`Do with the ${result} as you please`))
 }
-
-在给上面函数添加时间日志的时候 实际在包装的时候是给每个函数添加await标志， 想象如果直接在compose里就给每个函数天剑await标志呢？ 所以就是这个尝试版本
  * *******************/
 
 import express from 'express'
@@ -25,7 +23,7 @@ import mediumData from '../dist/mediumData'// 导入的数据
 // var path = require('path')
 const mediumUrl = 'https://medium.com/search?q=React-native'
 const variables = {
-  url: 'https://medium.com/search?q=ux'
+  url: 'https://medium.com/search?q=storybook'
 }
 const gDomApi = 'http://gdom.graphene-python.org/graphql'
 const URL = 'http://localhost'
@@ -84,16 +82,13 @@ export const start = async () => {
     await app.listen(PORT, () => {
       console.log(`Visit ${URL}:${PORT}`)
     })
-    const start = Date.now()
-     //await compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(variables).then(result => console.log(`Do with the ${result} as you please`));
+    const start=Date.now();
+    // await compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(variables).then(result => console.log(`Do with the ${result} as you please`));
 
-    const res = await insertData(variables)
-    console.log(res);
-           
-
-    const end = Date.now()
-    const elpase = end - start
-    console.log('操作花费时间:', elpase)
+    
+    const end=Date.now();
+    const elpase=end-start;
+    console.log("操作花费时间:",elpase);
   } catch (e) {
     console.log(e)
   };
@@ -102,7 +97,7 @@ export const start = async () => {
 // 获取数据的方法
 const handleGrqphcoolDataTemplate = R.curry((api, template, variables) => (
  request(api, template, variables).then(data => {
-   //console.log(data.page.items);
+   // console.log(data.page.items);
    return data
  })
 ))
@@ -119,19 +114,10 @@ const getDataFromMediumWaitForUrl = handleGrqphcoolDataTemplate(gDomApi, que)
 // const getArray = R.view(xHeadYLens);
 // 这是从reddit中找的异步执行的方法
 // Async compose
-
+const compose = (...functions) => input => functions.reduceRight((chain, func) => chain.then(func), Promise.resolve(input))
 const getArray = (obj) => obj.page.items
 
 // Functions fn1, fn2, fn3 can be standard synchronous functions or return a Promise
 // compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(input).then(result => console.log(`Do with the ${result} as you please`));
-const compose = (...functions) => input => functions.reduceRight((chain, func) => chain.then(func), Promise.resolve(input))
 
-const insertData = compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)
 // const insertData = flowAsync( getDataFromMediumWaitForUrl, getArray , insertDataWaitForData);
-// const insertData= R.compose( insertDataWaitForData , getArray, getDataFromMediumWaitForUrl);
-
-// const compose = (...functions) => input =>
-
-//    functions.reduceRight((chain, func) =>
-
-//       chain.then(func), Promise.resolve(input))

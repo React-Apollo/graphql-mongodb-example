@@ -11,7 +11,10 @@
 compose(fn3, fn2, fn1)(input).then(result => console.log(`Do with the ${result} as you please`))
 }
 
-在给上面函数添加时间日志的时候 实际在包装的时候是给每个函数添加await标志， 想象如果直接在compose里就给每个函数天剑await标志呢？ 所以就是这个尝试版本
+这个版本添加map方法，对多组关键字进行遍历和添加操作 http://reactivex.io/learnrx/ 这篇文章第一个例子引发的
+
+可以工作，但是map还是同步的，刚开始会报错，为undefine ,但是数据是插进数据库了
+下个版本彩专用rxjs来实施
  * *******************/
 
 import express from 'express'
@@ -24,9 +27,12 @@ import mediumData from '../dist/mediumData'// 导入的数据
 // var fs = require('fs')
 // var path = require('path')
 const mediumUrl = 'https://medium.com/search?q=React-native'
-const variables = {
-  url: 'https://medium.com/search?q=ux'
-}
+const variablesArr =[{
+  url: 'https://medium.com/search?q=ux'},{
+   url: 'https://medium.com/search?q=typescript'},
+   {
+    url: 'https://medium.com/search?q=node.js'}
+]
 const gDomApi = 'http://gdom.graphene-python.org/graphql'
 const URL = 'http://localhost'
 const PORT = 3001
@@ -85,10 +91,14 @@ export const start = async () => {
       console.log(`Visit ${URL}:${PORT}`)
     })
     const start = Date.now()
-     //await compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(variables).then(result => console.log(`Do with the ${result} as you please`));
+     
+     var insertDatas=function(arr){
+        arr.map(insertData(keywords));
+      };
 
-    const res = await insertData(variables)
-    console.log(res);
+     await insertDatas();
+    //const res = await insertData(variables)
+    console.log(variablesArr);
            
 
     const end = Date.now()
