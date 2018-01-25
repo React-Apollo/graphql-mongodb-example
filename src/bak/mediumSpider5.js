@@ -1,5 +1,5 @@
 'use strict'
-/************************************************
+/*****************
  *  从medium抓取一下感兴趣的内容，放到app中
  * 这个版本改用从meduium中找到的一个方法来实现多个异步流程的
  * compose方法。 网址是 https://medium.com/@jperasmus11/roll-your-own-async-compose-pipe-functions-658cafe4c46f
@@ -41,7 +41,6 @@ const api = 'https://api.graph.cool/simple/v1/cjcrwz0tg3jyf0153l824cpyh'
 var _ = require('lodash')
 var flow = require('nimble')
 var Promise = require('bluebird')
-var Rx = require('rx')
 // graphql模板
 const mu = `mutation getMediumList(
    $title:String!,
@@ -91,16 +90,18 @@ export const start = async () => {
     await app.listen(PORT, () => {
       console.log(`Visit ${URL}:${PORT}`)
     })
-    const start = Date.now()
+    const begin = Date.now()
 
-    const source = Rx.Observable.from(variablesArr)
+    var insertDatas = function (arr) {
+       arr.map(insertData(keywords))
+      };
 
-    const example = source.map(insertData)
-
-    const subscribe = example.subscribe(val => console.log(val))
+    await insertDatas()
+    //const res = await insertData(variables)
+    console.log(variablesArr)
 
     const end = Date.now()
-    const elpase = end - start
+    const elpase = end - begin
     console.log('操作花费时间:', elpase)
   } catch (e) {
     console.log(e)

@@ -5,10 +5,8 @@
  * Path: /Users/apple/Public/Git_Bank/graphql-mongodb-example
  * Created Date: Wednesday, January 24th 2018, 6:32:08 pm
  * Author: apple
- * item：抓取jb51的页面数据
+ * item 1：抓取jb51的页面数据
  * item 2：函数式重构获取方法
- * item 3 : 获取页数然后使用foreach顺序调用获取数据函数  --不成功，暂时搁置
- * item 4：  准备moongodb配置准备插入数据库--完成
  * Copyright (c) 2018 Your Company
  */
 import { MongoClient, ObjectId } from 'mongodb'
@@ -22,7 +20,6 @@ const URL = 'http://localhost'
 const PORT = 3001
 const MONGO_URL = 'mongodb://php-smarter:phpsmarter@ds239097.mlab.com:39097/recompose'
 const dataArray = []
-const collection = 'JB51'
 // graphql模板
 const qu2 = `query getLastPage($url:String!){
     page(url: $url) {
@@ -44,14 +41,13 @@ const qu3 = `query getPage($url:String!){
 export const start = async () => {
   try {
     const app = express()
+
     app.use(cors())
     app.use(express.static(__dirname))
     await app.listen(PORT, () => {
       console.log(`Visit ${URL}:${PORT}`)
     })
     const start = Date.now()
-    const db = await MongoClient.connect(MONGO_URL)
-    //console.log(db);
 
     // const res = await getJb51Page(variables)
     // const getStr=str=> str.page.query[0];
@@ -59,23 +55,17 @@ export const start = async () => {
     // const  lss=str=>str.herf
     // const  lsss=await lss(ls)
 
-    for (var i =21; i <=30; i++) {
-      const singlePageData = await getDataFromJB51(i)
+    for (var i = 1; i <= 3; i++) {
+      const singlePageData = await getDataFromJB51(i)  
       dataArray.push(singlePageData)
     }
-   
-    const flattenData = R.flatten(dataArray);
-    const dbForData=data=>{db.collection('JB51').save(data)}
-    //const dbForData = InsertConfig(`${db}.${collection}`)
-    
-    const insertData = compose(R.map(dbForData), flattenData);
-    await  insertData(flattenData);
-    // console.log(flattenData)
-    console.log(dataArray.length); 
+    const flattenData = R.flatten(dataArray)
+    console.log(flattenData)
+
     const end = Date.now()
     const elpase = end - start
     console.log('操作花费时间:', elpase)
-    //console.log(flattenData.length)
+    console.log(flattenData.length)
   } catch (e) {
     console.log(e)
   };
@@ -98,7 +88,7 @@ const s3 = arr => arr[0]
 const getLastPage = R.compose(s3, s2, s1)
 // getLastpage
 
-// const getJb51Page = handleGrqphcoolDataTemplate(gDomApi, qu2)
+//const getJb51Page = handleGrqphcoolDataTemplate(gDomApi, qu2)
 // #############################################################################
 const pageFactory = handleGrqphcoolDataTemplate(gDomApi, qu3)
 
@@ -122,11 +112,4 @@ const variablesTemp = (num) => (`{"url":"http://www.jb51.net/list/list_243_${num
 const variables = (variaTemp) => JSON.parse(variaTemp)  // 格式化模板
 const queryPage = (queryStr) => queryData(queryStr)  // 查询数据
 
-const getDataFromJB51 = compose(queryPage, variables, variablesTemp) // 异步的compose函数
-// const pushTemp=(method)=(arr)=>arr.method;
-// const arrPushMethod=pushTemp(Array.push)
-/// /const combineMethod=compose(arrPushMethod,getDataFromJB51);
-
-// #############################################################################
-// #############################################################################
-
+const getDataFromJB51 = compose(queryPage, variables , variablesTemp) // 异步的compose函数
