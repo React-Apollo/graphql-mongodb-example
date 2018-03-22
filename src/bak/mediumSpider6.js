@@ -23,13 +23,13 @@ import express from 'express'
 import cors from 'cors'
 import * as R from 'ramda'
 import { request } from 'graphql-request'
-import mediumData from '../dist/mediumData'// 导入的数据
+//import mediumData from '../dist/mediumData'// 导入的数据
 // import new_hotel from '../dist/new_hotel'
 // var fs = require('fs')
 // var path = require('path')
 const mediumUrl = 'https://medium.com/search?q=React-native'
 const variablesArr = [{
-  url: 'https://medium.com/search?q=ux'}, {
+  url: 'https://medium.com/search?q=sketch'}, {
     url: 'https://medium.com/search?q=typescript'},
 {
   url: 'https://medium.com/search?q=node.js'}

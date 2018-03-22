@@ -31,7 +31,7 @@ export const start = async () => {
      Query :{
     /*test start area*/  
      getGithubToken:async (parent,args,context)=>{
-       console.log(args);
+      console.log(args);
       const endpoint = 'https://github.com/login/oauth/access_token'
       const {githubCode} =args;
       const client_id= '842e83a0329b156b0a5b'

@@ -1,5 +1,5 @@
 'use strict'
-/*****************
+/************************************************
  *  从medium抓取一下感兴趣的内容，放到app中
  * 这个版本改用从meduium中找到的一个方法来实现多个异步流程的
  * compose方法。 网址是 https://medium.com/@jperasmus11/roll-your-own-async-compose-pipe-functions-658cafe4c46f
@@ -11,7 +11,11 @@
 compose(fn3, fn2, fn1)(input).then(result => console.log(`Do with the ${result} as you please`))
 }
 
-在给上面函数添加时间日志的时候 实际在包装的时候是给每个函数添加await标志， 想象如果直接在compose里就给每个函数天剑await标志呢？ 所以就是这个尝试版本
+这个版本添加map方法，对多组关键字进行遍历和添加操作 http://reactivex.io/learnrx/ 这篇文章第一个例子引发的
+
+可以工作，但是map还是同步的，刚开始会报错，为undefine ,但是数据是插进数据库了
+下个版本彩专用rxjs来实施
+observable的版本可以工作了。但是会报错， 继续排错，不知道问题出在哪里
  * *******************/
 
 import express from 'express'
@@ -23,10 +27,13 @@ import { request } from 'graphql-request'
 // import new_hotel from '../dist/new_hotel'
 // var fs = require('fs')
 // var path = require('path')
-const mediumUrl = 'https://medium.com/search?q=Redux'
-const variables = {
-  url: 'https://medium.com/search?q=graphcool'
-}
+const mediumUrl = 'https://medium.com/search?q=React-native-web'
+const variablesArr = [{
+  url: 'https://medium.com/search?q=sketch'}, {
+    url: 'https://medium.com/search?q=typescript'},
+{
+  url: 'https://medium.com/search?q=node.js'}
+]
 const gDomApi = 'http://gdom.graphene-python.org/graphql'
 const URL = 'http://localhost'
 const PORT = 3001
@@ -35,6 +42,7 @@ const api = 'https://api.graph.cool/simple/v1/cjcrwz0tg3jyf0153l824cpyh'
 var _ = require('lodash')
 var flow = require('nimble')
 var Promise = require('bluebird')
+var Rx = require('rx')
 // graphql模板
 const mu = `mutation getMediumList(
    $title:String!,
@@ -85,11 +93,12 @@ export const start = async () => {
       console.log(`Visit ${URL}:${PORT}`)
     })
     const start = Date.now()
-     //await compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(variables).then(result => console.log(`Do with the ${result} as you please`));
 
-    const res = await insertData(variables)
-    console.log(res);
-           
+    const source = Rx.Observable.from(variablesArr)
+
+    const example = source.map(insertData)
+
+    const subscribe = example.subscribe(val => console.log(val))
 
     const end = Date.now()
     const elpase = end - start
@@ -102,7 +111,7 @@ export const start = async () => {
 // 获取数据的方法
 const handleGrqphcoolDataTemplate = R.curry((api, template, variables) => (
  request(api, template, variables).then(data => {
-   //console.log(data.page.items);
+   // console.log(data.page.items);
    return data
  })
 ))

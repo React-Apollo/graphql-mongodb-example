@@ -19,41 +19,45 @@ import express from 'express'
 import cors from 'cors'
 import * as R from 'ramda'
 import { request } from 'graphql-request'
-//import mediumData from '../dist/mediumData'// 导入的数据
-// import new_hotel from '../dist/new_hotel'
-// var fs = require('fs')
-// var path = require('path')
-const mediumUrl = 'https://medium.com/search?q=Redux'
-const variables = {
-  url: 'https://medium.com/search?q=graphcool'
-}
+import mediumData from '../dist/mediumData'// 导入的数据
+
+const mediumUrl = 'https://medium.com/search?q=React-native'
+
 const gDomApi = 'http://gdom.graphene-python.org/graphql'
 const URL = 'http://localhost'
 const PORT = 3001
 // graphcool endpoint
-const api = 'https://api.graph.cool/simple/v1/cjcrwz0tg3jyf0153l824cpyh'
-var _ = require('lodash')
-var flow = require('nimble')
-var Promise = require('bluebird')
+const api = 'https://api.graph.cool/simple/v1/cjcwa8kae0o120100qdemvp9y'
 // graphql模板
-const mu = `mutation getMediumList(
-   $title:String!,
-   $subTitle:String!,
-   $authorName:String!,
-   $avatarImage: String!,
-   $shortPassage:String!,
-   $url: String!,
-   $clap: String!
+const dataArray =[];
+const mu = `mutation getReactScriptList(
+    $title: String! 
+    $url: String,
+    $funcCat: String,
+    $platformCat: String,
+    $dateUpdate: String,
+    $comments: String,
+    $img: String,
+    $excerpt: String,
+    $demoUrl: String,
+    $tag1: String,
+    $tag2: String,
+    $tag3: String
 
 ){
-   createMedium(
-   title:$title,
-   subTitle:$subTitle,
-   authorName:$authorName,
-   avatarImage:$avatarImage,
-   shortPassage:$shortPassage,
-   url: $url,
-   clap:$clap,
+   createReactScript(
+    title:$title,
+    url: $url,
+    funcCat:$funcCat,
+    platformCat:$platformCat,
+    dateUpdate:$dateUpdate ,
+    comments:$comments ,
+    img:$img ,
+    excerpt:$excerpt ,
+    demoUrl:$demoUrl ,
+    tag1:$tag1 ,
+    tag2:$tag2 ,
+    tag3:$tag3 
    ){
       id,
       title
@@ -61,18 +65,24 @@ const mu = `mutation getMediumList(
 
 }`
 
-const que = `query getMedium($url:String!){
-     page(url: $url) {
-         items: query(selector: "div.js-postListHandle .js-block"){
-         title: text(selector: "div h3")
-         subTitle: text(selector: "div h4")
-         url:attr(selector:"div .postArticle-content a",name:"href")
-         shortPassage: text(selector: "div p")
-         avatarImage:attr(selector:".postMetaInline-avatar img"name:"src")
-         authorName: text(selector: "div .postMetaInline:first-child")
-         clap: text(selector: "div .js-actionMultirecommendCount  ")
-         }  
-     }
+const que = `query getReactScript($url:String!){
+    page(url: $url) {
+       items: query(selector:"div #content article") {
+           title: text(selector:"h2 a")
+           url: attr(selector:"h2 a" name:"href")
+           funcCat:text(selector:".adt span a:first-child")
+           platformCat:text(selector:".adt  span  a:last-child")
+           dateUpdate:text(selector:".adt .date")
+           comments:text(selector:".below-title-meta .link-comments")
+           img: attr(selector:".wp-post-image",name:"src")
+           excerpt:text(selector:".entry-summary p")
+           demoUrl: attr(selector:".download-btn" name:"href")
+           tag1:text(selector:".entry-meta span a:first-child")
+           tag2:text(selector:".entry-meta span a:nth-child(2)")
+           tag3:text(selector:".entry-meta span a:nth-child(3)")
+         
+         } 
+    }
 }`
 
 export const start = async () => {
@@ -87,10 +97,15 @@ export const start = async () => {
     const start = Date.now()
      //await compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(variables).then(result => console.log(`Do with the ${result} as you please`));
 
-    const res = await insertData(variables)
-    console.log(res);
-           
+     for (var i =6; i <=9; i++) {
+            const sliceData=await  getSingePageDataFromUrl(i);
+              dataArray.push(sliceData);
 
+           }
+           
+    const flattenData = R.flatten(dataArray);
+    const res=  await insertDataWaitForData(flattenData);
+    console.log(res);
     const end = Date.now()
     const elpase = end - start
     console.log('操作花费时间:', elpase)
@@ -113,25 +128,21 @@ const insertDataWaitForData = R.map(graphqlRequestMethodWaitForData)
 // 从Medium 网站获取数据的方法是一样的的，柯理化是处理参数不同,抓取是变量是网站地址
 // 抓取后的数据作为insertDataWaitForData的数据
 
-const getDataFromMediumWaitForUrl = handleGrqphcoolDataTemplate(gDomApi, que)
+const getDataReactScriptWaitForUrl = handleGrqphcoolDataTemplate(gDomApi, que)
 
-// const xHeadYLens = R.lensPath(['page', 'items']);
-// const getArray = R.view(xHeadYLens);
-// 这是从reddit中找的异步执行的方法
-// Async compose
+const getArray = (obj) =>{
+ console.log(obj.page.items)
+ return obj.page.items
+}
 
-const getArray = (obj) => obj.page.items
-
-// Functions fn1, fn2, fn3 can be standard synchronous functions or return a Promise
-// compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)(input).then(result => console.log(`Do with the ${result} as you please`));
 const compose = (...functions) => input => functions.reduceRight((chain, func) => chain.then(func), Promise.resolve(input))
 
-const insertData = compose(insertDataWaitForData, getArray, getDataFromMediumWaitForUrl)
-// const insertData = flowAsync( getDataFromMediumWaitForUrl, getArray , insertDataWaitForData);
-// const insertData= R.compose( insertDataWaitForData , getArray, getDataFromMediumWaitForUrl);
+const variablesTemp = (num) => (`{"url":"http://reactscript.com/page/${num}/"}`)
 
-// const compose = (...functions) => input =>
+//
+const Resolvevar = (variaTemp) => JSON.parse(variaTemp)  // 格式化模板
+//const queryPage = (queryStr) => getDataFromReactScriptWaitForUrl(queryStr)  // 查询数据
 
-//    functions.reduceRight((chain, func) =>
+//const getDataFromReactScript = compose(getArray, queryPage, variables, variablesTemp)
 
-//       chain.then(func), Promise.resolve(input))
+const getSingePageDataFromUrl = compose(getArray, getDataReactScriptWaitForUrl, Resolvevar, variablesTemp)

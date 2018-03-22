@@ -23,6 +23,7 @@
     "cors": "^2.8.1",
     "es6-promise": "^4.2.2",
     "express": "^4.14.0",
+    "fs-extra": "^5.0.0",
     "graphcool-lib": "^0.1.4",
     "graphql": "^0.8.2",
     "graphql-request": "^1.4.1",

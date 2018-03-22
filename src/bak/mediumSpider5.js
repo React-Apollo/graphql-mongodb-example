@@ -22,7 +22,7 @@ import express from 'express'
 import cors from 'cors'
 import * as R from 'ramda'
 import { request } from 'graphql-request'
-import mediumData from '../dist/mediumData'// 导入的数据
+//import mediumData from '../dist/mediumData'// 导入的数据
 // import new_hotel from '../dist/new_hotel'
 // var fs = require('fs')
 // var path = require('path')
